@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圈圈叉叉遊戲</title>
+    <style>
+        .grid {
+            width: 300px;
+            height: 300px;
+            border: 1px solid black;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-wrap: wrap;
+            background-size: cover;
+            box-sizing: border-box;
+        }
+        .clr {
+            width: 33.3%;
+            height: 33.3%;
+            border: 1px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            box-sizing: border-box;
+        }
+        #status {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.5em;
+        }
+        #restartButton {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+        #Img{
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <div class="grid">
+            <div id="c1" class="clr" data-index="0"></div>
+            <div id="c2" class="clr" data-index="1"></div>
+            <div id="c3" class="clr" data-index="2"></div>
+            <div id="c4" class="clr" data-index="3"></div>
+            <div id="c5" class="clr" data-index="4"></div>
+            <div id="c6" class="clr" data-index="5"></div>
+            <div id="c7" class="clr" data-index="6"></div>
+            <div id="c8" class="clr" data-index="7"></div>
+            <div id="c9" class="clr" data-index="8"></div>
+        </div>
+        <div id="status">現在是 X 的回合</div>
+        <button id="restartButton">重新開始</button>
+    </div>
+
+    <!-- 隱藏圖片，用於背景圖片 -->
+    <img id="Img" src="./circle.png" class="hidden">
+    <img id="Img" src="./fork.png" class="hidden">
+
+    <script>
+        const cells = document.querySelectorAll('.clr');
+        const statusDisplay = document.getElementById('status');
+        const restartButton = document.getElementById('restartButton');
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let gameState = ["", "", "", "", "", "", "", "", ""];
+
+        const winningConditions = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        const handleCellPlayed = (clickedCell, clickedCellIndex) => {
+            gameState[clickedCellIndex] = currentPlayer;
+            clickedCell.style.backgroundImage = currentPlayer === 'X' ? 'url(./fork.png)' : 'url(./circle.png)';
+        };
+
+        const handlePlayerChange = () => {
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            statusDisplay.innerHTML = `現在是 ${currentPlayer} 的回合`;
+        };
+
+        const handleResultValidation = () => {
+            let roundWon = false;
+            for (let i = 0; i < winningConditions.length; i++) {
+                const winCondition = winningConditions[i];
+                let a = gameState[winCondition[0]];
+                let b = gameState[winCondition[1]];
+                let c = gameState[winCondition[2]];
+                if (a === '' || b === '' || c === '') {
+                    continue;
+                }
+                if (a === b && b === c) {
+                    roundWon = true;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                statusDisplay.innerHTML = `玩家 ${currentPlayer} 獲勝！`;
+                gameActive = false;
+                return;
+            }
+
+            let roundDraw = !gameState.includes("");
+            if (roundDraw) {
+                statusDisplay.innerHTML = '平局！';
+                gameActive = false;
+                return;
+            }
+
+            handlePlayerChange();
+        };
+
+        const handleCellClick = (clickedCellEvent) => {
+            console.log(clickedCellEvent);
+            const clickedCell = clickedCellEvent.target;
+            const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
+
+            if (gameState[clickedCellIndex] !== "" || !gameActive) {
+                return;
+            }
+
+            handleCellPlayed(clickedCell, clickedCellIndex);
+            handleResultValidation();
+        };
+
+        const handleRestartGame = () => {
+            gameActive = true;
+            currentPlayer = 'X';
+            gameState = ["", "", "", "", "", "", "", "", ""];
+            statusDisplay.innerHTML = `現在是 ${currentPlayer} 的回合`;
+            cells.forEach(cell => cell.style.backgroundImage = "");
+        };
+
+        cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+        restartButton.addEventListener('click', handleRestartGame);
+        statusDisplay.innerHTML = `現在是 ${currentPlayer} 的回合`;
+    </script>
+</body>
+</html>
